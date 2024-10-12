@@ -1,5 +1,5 @@
-import mysql.connector as sql
 from random import randint
+import mysql.connector as sql
 
 
 def create_connection(host_name, user_name, user_password, db_name):
@@ -33,9 +33,19 @@ def random_number():
 
 def create_account():
     name = input("Enter account holder's name: ")
+    while not name.strip():
+        name = input("Name cannot be empty. Please enter your name: ")
     phone = input("Enter phone number: ")
+    while not phone.strip():
+        phone = input("Phone number cannot be empty. Please enter your phone number: ")
     address = input("Enter address: ")
+    while not address.strip():
+        address = input("Address cannot be empty. Please enter your address: ")
     initial_balance = float(input("Enter initial deposit (>=0): "))
+    while not initial_balance:
+        initial_balance = input(
+            "Initial deposit cannot be empty. Please enter your initial deposit: "
+        )
     account_number = random_number()
     query = "INSERT INTO Account (name,account_number, phone_number, address, balance) VALUES (%s, %s, %s, %s, %s)"
     values = (name, account_number, phone, address, initial_balance)
@@ -47,13 +57,9 @@ def create_account():
 def deposit_money():
     account_number = int(input("Enter account number: "))
     amount = float(input("Enter deposit amount: "))
-
-    # Update balance
-    query = "UPDATE Account SET balance = balance + %s WHERE account_number = %s"
+    query = "UPDATE Account SET balance = balance + %s WHERE account_number = %s"  # Update balance
     cursor.execute(query, (amount, account_number))
-
-    # Log transaction
-    query = "INSERT INTO Transaction (account_number, transaction_type, amount, transaction_date) VALUES (%s, 'Deposit', %s, NOW())"
+    query = "INSERT INTO Transaction (account_number, transaction_type, amount, transaction_date) VALUES (%s, 'Deposit', %s, NOW())"  # Log transaction
     cursor.execute(query, (account_number, amount))
     connection.commit()
     print("Deposit successful!")
@@ -62,19 +68,16 @@ def deposit_money():
 def withdraw_money():
     account_number = int(input("Enter account number: "))
     amount = float(input("Enter withdrawal amount: "))
-
-    # Check current balance
-    query = "SELECT balance FROM Account WHERE account_number = %s"
+    query = (
+        "SELECT balance FROM Account WHERE account_number = %s"  # Check current balance
+    )
     cursor.execute(query, (account_number,))
     balance = cursor.fetchone()[0]
-
     if balance >= amount:
         # Update balance
         query = "UPDATE Account SET balance = balance - %s WHERE account_number = %s"
         cursor.execute(query, (amount, account_number))
-
-        # Log transaction
-        query = "INSERT INTO Transaction (account_number, transaction_type, amount, transaction_date) VALUES (%s, 'Withdraw', %s, NOW())"
+        query = "INSERT INTO Transaction (account_number, transaction_type, amount, transaction_date) VALUES (%s, 'Withdraw', %s, NOW())"  # Log transaction
         cursor.execute(query, (account_number, amount))
         connection.commit()
         print("Withdrawal successful!")
@@ -99,13 +102,31 @@ def transaction_history():
         print(transaction)
 
 
+def transfer_money():
+    senders_address = int(input("Enter the account number of sender: "))
+    recievers_address = int(input("Enter the account number of reciever: "))
+    amount_to_transfer = int(input("Enter the money to be transfered: "))
+    query = "select balance from account where account_number=%s"
+    cursor.execute(query, (senders_address,))
+    balance = cursor.fetchone()[0]
+    if balance >= amount_to_transfer:
+        query = "update account set balance = balance - %s where account_number=%s"
+        cursor.execute(query, (amount_to_transfer, senders_address))
+        query = "insert into transfer (account_number, transaction_type, amount, transaction_date) values (%s,'Withdraw',%s,now())"
+        cursor.execute(query, (senders_address, amount_to_transfer))
+        query = "update account set balance = balance + %s where account_number=%s"
+        cursor.execute(query, (amount_to_transfer, recievers_address))
+        query = "insert into transfer (account_number, transaction_type, amount, transaction_date) values (%s,'Deposit',%s,now())"
+        cursor.execute(query, (recievers_address, amount_to_transfer))
+        connection.commit()
+        print("Transfer successful")
+
+
 def close_account():
     account_number = int(input("Enter account number: "))
-    # Delete transactions
-    query = "DELETE FROM Transaction WHERE account_number = %s"
+    query = "DELETE FROM Transaction WHERE account_number = %s"  # Delete transactions
     cursor.execute(query, (account_number,))
-    # Delete account
-    query = "DELETE FROM Account WHERE account_number = %s"
+    query = "DELETE FROM Account WHERE account_number = %s"  # Delete account
     cursor.execute(query, (account_number,))
     connection.commit()
     print("Account closed successfully!")
@@ -136,9 +157,13 @@ def menu():
         elif choice == 6:
             close_account()
         elif choice == 7:
+            print("Thank you visit again")
             break
         else:
             print("Invalid choice!")
 
 
-menu()
+try:
+    menu()
+except (KeyboardInterrupt, ValueError) as e:
+    print(e)
