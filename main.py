@@ -141,8 +141,9 @@ def menu():
         print("3. Withdraw Money")
         print("4. Check Balance")
         print("5. View Transaction History")
-        print("6. Close Account")
-        print("7. Exit")
+        print("6. Transfer Money")
+        print("7. Close Account")
+        print("8. Exit")
         choice = int(input("Enter your choice: "))
         if choice == 1:
             create_account()
@@ -155,8 +156,10 @@ def menu():
         elif choice == 5:
             transaction_history()
         elif choice == 6:
-            close_account()
+            transfer_money()
         elif choice == 7:
+            close_account()
+        elif choice == 8:
             print("Thank you visit again")
             break
         else:
