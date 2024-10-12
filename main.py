@@ -112,11 +112,11 @@ def transfer_money():
     if balance >= amount_to_transfer:
         query = "update account set balance = balance - %s where account_number=%s"
         cursor.execute(query, (amount_to_transfer, senders_address))
-        query = "insert into transfer (account_number, transaction_type, amount, transaction_date) values (%s,'Withdraw',%s,now())"
+        query = "insert into transaction (account_number, transaction_type, amount, transaction_date) values (%s,'Withdraw',%s,now())"
         cursor.execute(query, (senders_address, amount_to_transfer))
         query = "update account set balance = balance + %s where account_number=%s"
         cursor.execute(query, (amount_to_transfer, recievers_address))
-        query = "insert into transfer (account_number, transaction_type, amount, transaction_date) values (%s,'Deposit',%s,now())"
+        query = "insert into transaction (account_number, transaction_type, amount, transaction_date) values (%s,'Deposit',%s,now())"
         cursor.execute(query, (recievers_address, amount_to_transfer))
         connection.commit()
         print("Transfer successful")
